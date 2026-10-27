@@ -1,5 +1,10 @@
 # Changelog
 
+## Unreleased
+
+- Use the public npm name `@ungaaaabungaaa/qeth` because the registry rejects the unscoped name. The `qeth` command is unchanged.
+- Verify installed package paths for scoped names.
+
 ## 0.1.0
 
 - Document npm, pnpm, Bun, and Yarn install methods.

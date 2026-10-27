@@ -20,7 +20,8 @@ try {
   const prefix = join(dir, 'install');
   await npm(['install', '--global', '--prefix', prefix, '--cache', join(dir, 'cache'), '--ignore-scripts', '--no-audit', '--no-fund', join(dir, packed.filename)]);
   const modules = process.platform === 'win32' ? join(prefix, 'node_modules') : join(prefix, 'lib', 'node_modules');
-  const cli = join(modules, 'qeth', 'dist', 'cli.js');
+  const packageRoot = join(modules, ...packed.name.split('/'));
+  const cli = join(packageRoot, 'dist', 'cli.js');
   await access(process.platform === 'win32' ? join(prefix, 'qeth.cmd') : join(prefix, 'bin', 'qeth'));
   const run = args => execute(process.execPath, [cli, ...args], { timeout: 15000, maxBuffer: 4 * 1024 * 1024 });
   assert.match((await run(['--help'])).stdout, /qeth mission plan/);
@@ -36,7 +37,7 @@ try {
     const { stdout } = await run(args);
     assert.equal(JSON.parse(stdout).kind, kind);
   }
-  const library = await import(pathToFileURL(join(modules, 'qeth', 'dist', 'index.js')).href);
+  const library = await import(pathToFileURL(join(packageRoot, 'dist', 'index.js')).href);
   assert.equal(library.analyzeTrace({ events: [] }).eventCount, 0);
   process.stdout.write(`Installed qeth ${packed.version}: help, version, all four commands, and library import passed. Tarball: ${packed.size} bytes.\n`);
 } finally { await site?.close(); await rm(dir, { recursive: true, force: true }); }
