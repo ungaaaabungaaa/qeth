@@ -1,5 +1,5 @@
 {
-  "name": "qeth",
+  "name": "@ungaaaabungaaa/qeth",
   "version": "0.1.0",
   "description": "Local tools to inspect RAG data, trace agent runs, crawl sites, and plan offline survey routes.",
   "type": "module",

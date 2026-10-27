@@ -1,6 +1,6 @@
 # Package managers
 
-Qeth is one npm package. npm, pnpm, Bun, and Yarn can install that same package. Qeth's CLI requires Node.js 22.18 or newer on `PATH`. Bun respects the CLI's `node` shebang; these instructions do not switch execution to Bun's runtime.
+Qeth is published under the npm package name `@ungaaaabungaaa/qeth`; its executable remains `qeth`. npm, pnpm, Bun, and Yarn can install that same package. Qeth's CLI requires Node.js 22.18 or newer on `PATH`. Bun respects the CLI's `node` shebang; these instructions do not switch execution to Bun's runtime.
 
 The first public release is pending. The registry commands below become available after publication.
 
@@ -8,20 +8,20 @@ The first public release is pending. The registry commands below become availabl
 
 | Client | Global install | One-time command |
 | --- | --- | --- |
-| npm | `npm install -g qeth` | `npx qeth --help` |
-| pnpm | `pnpm add -g qeth` | `pnpm dlx qeth --help` |
-| Bun | `bun add -g qeth` | `bunx qeth --help` |
-| Yarn 2+ | Use `yarn dlx` | `yarn dlx qeth --help` |
-| Yarn Classic 1.x | `yarn global add qeth` | `yarn qeth --help` after a local install |
+| npm | `npm install -g @ungaaaabungaaa/qeth` | `npx @ungaaaabungaaa/qeth --help` |
+| pnpm | `pnpm add -g @ungaaaabungaaa/qeth` | `pnpm dlx @ungaaaabungaaa/qeth --help` |
+| Bun | `bun add -g @ungaaaabungaaa/qeth` | `bunx @ungaaaabungaaa/qeth --help` |
+| Yarn 2+ | Use `yarn dlx` | `yarn dlx @ungaaaabungaaa/qeth --help` |
+| Yarn Classic 1.x | `yarn global add @ungaaaabungaaa/qeth` | `yarn qeth --help` after a local install |
 
 Choose one global install method. Each global method adds the same `qeth` command. Its package manager's global binary directory must be on `PATH`. If pnpm reports that this directory is missing, follow pnpm's setup instructions before retrying. Modern Yarn uses `dlx` for temporary CLI execution and does not provide Classic's global command.
 
 To select a release, append its version to the package name. For example, after version 0.1.0 is published:
 
 ```sh
-pnpm dlx qeth@0.1.0 --version
-bunx qeth@0.1.0 --version
-yarn dlx qeth@0.1.0 --version
+pnpm dlx @ungaaaabungaaa/qeth@0.1.0 --version
+bunx @ungaaaabungaaa/qeth@0.1.0 --version
+yarn dlx @ungaaaabungaaa/qeth@0.1.0 --version
 ```
 
 ## Add to a project
@@ -29,13 +29,13 @@ yarn dlx qeth@0.1.0 --version
 Use your project's existing package manager and lockfile:
 
 ```sh
-npm install --save-dev qeth
+npm install --save-dev @ungaaaabungaaa/qeth
 # or
-pnpm add -D qeth
+pnpm add -D @ungaaaabungaaa/qeth
 # or
-bun add -d qeth
+bun add -d @ungaaaabungaaa/qeth
 # or
-yarn add -D qeth
+yarn add -D @ungaaaabungaaa/qeth
 ```
 
 Then add a script to your project's `package.json`:

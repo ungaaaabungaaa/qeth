@@ -7,20 +7,20 @@ Local tools for document quality, agent traces, bounded web crawling, and offlin
 *Concept illustration generated for Qeth. It is not a screenshot or a physical product.*
 
 [![Checks](https://github.com/ungaaaabungaaa/qeth/actions/workflows/ci.yml/badge.svg)](https://github.com/ungaaaabungaaa/qeth/actions/workflows/ci.yml)
-[![npm version](https://img.shields.io/npm/v/qeth)](https://www.npmjs.com/package/qeth)
+[![npm version](https://img.shields.io/npm/v/@ungaaaabungaaa/qeth)](https://www.npmjs.com/package/@ungaaaabungaaa/qeth)
 
 ## Install
 
-Requires Node.js **22.18 or newer**, including when you install with Bun. The public npm release is being prepared. Until it is published, use the source instructions below.
+Requires Node.js **22.18 or newer**, including when you install with Bun. The npm package name is `@ungaaaabungaaa/qeth`; the installed command is `qeth`.
 
-After publication, choose one package manager. All use the same `qeth` package from the npm registry.
+Choose one package manager. All use the same `@ungaaaabungaaa/qeth` package from the npm registry.
 
 | Package manager | Install for repeated use | Run once |
 | --- | --- | --- |
-| npm | `npm install -g qeth` | `npx qeth --help` |
-| pnpm | `pnpm add -g qeth` | `pnpm dlx qeth --help` |
-| Bun | `bun add -g qeth` | `bunx qeth --help` |
-| Yarn 2+ | Use `yarn dlx` | `yarn dlx qeth --help` |
+| npm | `npm install -g @ungaaaabungaaa/qeth` | `npx @ungaaaabungaaa/qeth --help` |
+| pnpm | `pnpm add -g @ungaaaabungaaa/qeth` | `pnpm dlx @ungaaaabungaaa/qeth --help` |
+| Bun | `bun add -g @ungaaaabungaaa/qeth` | `bunx @ungaaaabungaaa/qeth --help` |
+| Yarn 2+ | Use `yarn dlx` | `yarn dlx @ungaaaabungaaa/qeth --help` |
 
 After a global install:
 
@@ -28,7 +28,7 @@ After a global install:
 qeth --help
 ```
 
-Bun uses Qeth's Node.js executable. A separate native Bun runtime build is not required. Yarn Classic users can use `yarn global add qeth`. See the [package manager guide](docs/package-managers.md) for local installs, version pinning, and verification scope.
+Bun uses Qeth's Node.js executable. A separate native Bun runtime build is not required. Yarn Classic users can use `yarn global add @ungaaaabungaaa/qeth`. See the [package manager guide](docs/package-managers.md) for local installs, version pinning, and verification scope.
 
 The four basic commands work without an account, a model download, or a paid API key. Documents and traces stay on your machine. The crawler contacts only the site you select.
 
@@ -97,7 +97,7 @@ See the [command contract](docs/cli-contract.md) for input formats, options, lim
 ## Use as a library
 
 ```js
-import { scanDocuments, analyzeTrace, planMission, crawlSite } from 'qeth';
+import { scanDocuments, analyzeTrace, planMission, crawlSite } from '@ungaaaabungaaa/qeth';
 
 const report = await scanDocuments('./docs');
 console.log(report.chunkCount);
