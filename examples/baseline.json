@@ -1,0 +1,5 @@
+{
+  "events": [
+    { "name": "model.answer", "startMs": 0, "endMs": 400, "status": "ok", "tokens": { "input": 1000, "output": 200 } }
+  ]
+}

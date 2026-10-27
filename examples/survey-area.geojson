@@ -1,0 +1,11 @@
+{
+  "type": "Feature",
+  "properties": { "name": "Synthetic small survey boundary", "source": "Hand-authored test geometry; not an approved flight area" },
+  "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+      [[77.59,12.97],[77.592,12.97],[77.592,12.972],[77.59,12.972],[77.59,12.97]],
+      [[77.5908,12.9708],[77.5912,12.9708],[77.5912,12.9712],[77.5908,12.9712],[77.5908,12.9708]]
+    ]
+  }
+}
