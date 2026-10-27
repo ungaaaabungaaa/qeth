@@ -1,0 +1,7 @@
+{
+  "events": [
+    { "id": "search-1", "name": "web.search", "kind": "tool", "startMs": 0, "endMs": 120, "status": "ok", "tokens": { "input": 400, "output": 120 } },
+    { "id": "query-1", "name": "vector.query", "kind": "tool", "startMs": 60, "endMs": 180, "status": "error", "tokens": { "input": 200, "output": 0 } },
+    { "id": "answer-1", "name": "model.answer", "kind": "model", "startMs": 180, "endMs": 450, "status": "ok", "tokens": { "input": 600, "output": 180 } }
+  ]
+}

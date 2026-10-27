@@ -1,0 +1,31 @@
+name: Publish npm release
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Existing version tag, such as v0.1.1
+        required: true
+        type: string
+permissions:
+  contents: read
+  id-token: write
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    environment: npm
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ inputs.tag }}
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 24
+          registry-url: https://registry.npmjs.org
+      - run: npm ci --ignore-scripts
+      - run: npm run check
+      - run: npm run smoke:package
+      - name: Check tag against package version
+        env:
+          RELEASE_TAG: ${{ inputs.tag }}
+        run: node -e "const p=require('./package.json');if(process.env.RELEASE_TAG!=='v'+p.version)process.exit(1)"
+      - run: npm publish --access public --provenance

@@ -1,0 +1,7 @@
+{
+  "chunks": [
+    { "id": "intro-a", "text": "Inspect local evidence before making a claim.", "metadata": { "source": "guide.md" }, "embedding": [0.1, 0.2, 0.3] },
+    { "id": "intro-b", "text": "Inspect  local evidence before making a claim.", "embedding": [0.1, 0.2] },
+    { "id": "planning", "text": "Mission estimates use explicit speed and battery assumptions.", "metadata": { "source": "mission.md" } }
+  ]
+}

@@ -1,0 +1,67 @@
+{
+  "name": "qeth",
+  "version": "0.1.0",
+  "description": "Local tools to inspect RAG data, trace agent runs, crawl sites, and plan offline survey routes.",
+  "type": "module",
+  "bin": {
+    "qeth": "dist/cli.js"
+  },
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist",
+    "examples",
+    "docs/cli-contract.md",
+    "README.md",
+    "CHANGELOG.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "typecheck": "tsc --noEmit",
+    "lint": "tsc --noEmit --noUnusedLocals --noUnusedParameters",
+    "test": "node --experimental-strip-types --test tests/*.test.mjs",
+    "test:coverage": "node --experimental-strip-types --experimental-test-coverage --test tests/*.test.mjs",
+    "check": "npm run lint && npm test && npm run build",
+    "prepack": "npm run build",
+    "demo": "npm run build && node scripts/demo.mjs",
+    "smoke:package": "node scripts/package-smoke.mjs"
+  },
+  "engines": {
+    "node": ">=22.18.0"
+  },
+  "license": "MIT",
+  "author": "Syed Abdul Muqeeth",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ungaaaabungaaa/qeth.git"
+  },
+  "bugs": {
+    "url": "https://github.com/ungaaaabungaaa/qeth/issues"
+  },
+  "homepage": "https://github.com/ungaaaabungaaa/qeth#readme",
+  "keywords": [
+    "cli",
+    "rag",
+    "agent",
+    "trace",
+    "crawler",
+    "geojson",
+    "survey"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "devDependencies": {
+    "@types/node": "^22.20.5",
+    "typescript": "^7.0.2"
+  },
+  "dependencies": {
+    "htmlparser2": "^12.0.0",
+    "ipaddr.js": "^2.5.0"
+  }
+}

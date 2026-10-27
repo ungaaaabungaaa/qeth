@@ -1,0 +1,48 @@
+# Qeth command contract v1
+
+Qeth 0.1.0 is a local-first inspection and offline mission planning CLI. Node.js 22.18 or newer is required. Basic commands need no account, API key, model, or Python installation.
+
+## Common interface
+
+- `qeth --help`, `qeth --version`, `qeth doctor`.
+- `qeth rag scan PATH [--chunk-size 1000] [--json] [--out FILE]`.
+- `qeth trace FILE [--baseline FILE] [--json] [--out FILE]`.
+- `qeth crawl URL [--max-pages 10] [--max-depth 2] [--timeout 10000] [--delay 250] [--allow-local] [--json] [--out FILE]`.
+- `qeth mission plan FILE [--spacing 20] [--speed 5] [--altitude 30] [--battery-minutes 25] [--reserve 20] [--optimize battery|distance] [--json] [--out FILE]`.
+- Unknown commands/options, missing values, and invalid numeric values are errors. `--out` writes JSON only to a new file; never overwrite an existing file. Create no output files without an explicit option. JSON stdout is exactly one JSON object plus a newline. Human output is a concise measured summary.
+- Exit 0: command completed, even when a scan finds data-quality issues. Exit 2: usage or input error. Exit 1: filesystem/network/runtime failure. Diagnostics and errors go to stderr. No stack trace or secrets in normal error output.
+- Every report has `schemaVersion: 1` and a `kind` value identifying the report. Runtime result values must be derived from actual input. No hallucination probability, clinical inference, or hardware flight approval.
+
+## RAG scan
+
+`scanDocuments(path, options?)` returns a `rag-scan` report. Input is one file or a directory. Accept `.txt`, `.md`, `.mdx`, `.json`, `.jsonl`. Plain text is split into nonempty chunks at a default maximum of 1000 characters. Chunk sizes may be 100..100000 characters. Structured input is an array of records, a `{chunks: [...]}` object, one chunk object, or one chunk object per JSONL line. Records have `id` (nonempty string), `text` (nonempty string), `metadata` (nonempty object), and optional `embedding` (nonempty finite numeric array). Invalid records are reported with file and record location. Invalid JSON is an input error.
+
+Report fields: fileCount, chunkCount, duplicateGroups (content hash, chunk identifiers), duplicateIds, missingMetadata (chunk identifiers), invalidRecords (location and reason), embedding (provided count, missing count, dimensions, invalid locations, dimension-mismatch locations), and warnings. Plain text records have generated IDs and source metadata. Compare normalized whitespace for text duplicates; IDs remain distinct from content hashes. Do not infer embeddings or metadata that were absent from structured input. Deterministic traversal and report order.
+
+Limits: 1000 files; 5 MiB per file; 25 MiB total bytes; 10000 records across the scan, including invalid structured records and generated text chunks. Reject record expansion before creating an unbounded issue report; JSONL is parsed incrementally. Reject a single over-limit supported file and stop on aggregate limits. Skip symlinks and hidden files/directories, `node_modules`, `vendor`, `dist`, `build`, and `.git`. Explicit hidden/vendor targets and target symlinks are rejected. Directory enumeration is bounded to 10000 entries before sorting, with depth at most 32. Unsupported files are ignored. No network use.
+
+## Trace
+
+`analyzeTrace(input, baseline?)` returns a `trace` report. Input schema: `{events: [{id?: string, name: string, kind?: string, startMs: number, endMs: number, status: "ok"|"error", tokens?: {input: nonnegative integer, output: nonnegative integer}}]}`. Names are nonempty; timestamps are finite and nonnegative; end must be >= start. Event IDs, when supplied, are unique. At most 100000 events and 10 MiB input.
+
+Report fields: eventCount, failedCount, wallTimeMs (max end minus min start; 0 for empty), totalEventTimeMs (sum, including concurrent spans), failures (name/id), tools (counts by name), tokens (input/output/total known sums, measuredEvents, missingEvents, complete), and comparison (null without baseline; otherwise actual total-token delta and percent only when both traces have complete token coverage; percent null for zero baseline). Never treat a missing token field as measured zero.
+
+## Crawl
+
+`crawlSite(url, options?)` returns a `crawl` report: root, pages (url, title, text, contentHash, depth), links (from, to), skipped (url, reason), and warnings. HTML extraction is deterministic and uses a maintained parser. Only same-origin links are queued. Remove URL fragments and reject userinfo. Ignore non-HTTP(S), binary content, script/style content, and excessive query variants. No JavaScript execution. Export a page/link graph; do not claim entity extraction or embeddings.
+
+Defaults: maxPages 10 (1..100), maxDepth 2 (0..10), request timeout 10000 ms (100..60000), inter-request delay 250 ms (0..10000). maxPages caps all admitted non-robots request attempts, including redirects and failed DNS/HTTP attempts; reserve each slot before DNS. Robots retrieval has a separate initial request plus at most 5 redirects. The global crawl deadline is 120000 ms. Each response is limited to 2 MiB, including robots. At most 5 same-origin redirects per chain; manually validate each destination before requesting it. Concurrency 1. At most 1000 discovered/queued URLs including redirect targets, 10000 graph links, 4 distinct serialized request URL variants per origin/pathname (including root and redirect targets), and 8192 characters per URL. Inter-request delay is measured conservatively from prior HTTP response completion. Robots parsing is limited to 20000 lines, 4096 characters per line, 2000 rules, 2048 characters per pattern, and 50 million matching-work units. A robots limit failure stops closed. User agent is `Qeth/VERSION (+https://github.com/ungaaaabungaaa/qeth)`, with VERSION read from package metadata.
+
+Static link resolution honors the first base element with an href. Resolve it against the document URL; malformed, data, or javascript bases fall back to the document URL. Later base elements are ignored. Filter the resulting links through the same-origin and protocol rules. An oversized base disables relative links and adds a warning while valid absolute links remain eligible. For robots matching, tokenize raw wildcard and final-anchor controls before normalizing literal octets. Decode only unreserved ASCII percent escapes; preserve encoded reserved/non-ASCII bytes and normalize raw Unicode to UTF-8 octets. Encoded stars and dollar signs remain literals.
+
+Fetch robots first. Match the Qeth group, then `*`; apply longest matching Allow/Disallow rule, with Allow winning ties; support `*` and final `$`. Honor a supported Crawl-delay up to the global deadline. Robots 404 permits a bounded crawl; 401/403 disallows it; other failed robots retrieval fails closed. Fetch no disallowed page. Failed pages are recorded; timeout/size/redirect failures must not escape limits. Reject non-public destinations by default after DNS resolution; pin validated DNS results to each connection to prevent rebinding. Reject mapped private IPv6, loopback, link-local, multicast, and private addresses. `--allow-local` additionally permits loopback addresses in IPv4 127.0.0.0/8 and IPv6 ::1 for fixture servers. It does not permit private LAN, link-local, or metadata addresses. DNS pinning, same-origin checks, and redirect validation remain active. Never forward credentials or cookies.
+
+## Offline mission plan
+
+`planMission(input, options?)` returns a `mission-plan` report. Input is a GeoJSON Polygon geometry, a Feature containing that geometry, or a one-feature FeatureCollection. Positions are WGS84 longitude/latitude pairs. Rings must be closed, simple, nondegenerate, and contain finite valid coordinates. Holes must be fully inside the outer ring and must not overlap or touch another boundary. Reject other geometry types, polygons whose projected bounding-box diagonal exceeds 20 km, polygons crossing the antimeridian, or latitudes outside +/-80 degrees. The extent limit applies to both long and wide shapes.
+
+Options: spacing metres (1..1000, default 20); speed metres/second (0.1..100, default 5); altitude metres above takeoff (1..500, default 30); batteryMinutes (1..1440, default 25); reservePercent (0..90, default 20); optimize (`battery` or `distance`, default battery). Explicit options with non-finite/out-of-range values are input errors.
+
+Generate survey legs by polygon scan-line clipping. Connect legs with paths that stay inside the outer ring and outside holes; validate entire segments, including concave boundaries. A visibility-graph shortest path or equivalent method is acceptable. Boundary contact is allowed for the outer ring; avoid crossing hole interiors. If a valid path cannot be produced, return a clear input error. Bounds: 1000 input vertices, 1000 survey legs, and 10000 waypoints; reject excessive work before large allocation. Optimization may compare horizontal and vertical surveys and retain a feasible lower-distance candidate. Do not claim global optimality or full sensor coverage.
+
+Report fields: assumptions (spacingM, speedMps, altitudeM, batteryMinutes, reservePercent, optimize, projection), waypoints (lon, lat, altitudeM), legs or route roles for display, distanceM, estimatedSeconds, usableBatterySeconds, estimatedBatteryPercent, withinBatteryBudget, warnings, and geojson (FeatureCollection with survey boundary and feasible route LineString). Estimates use distance/speed and the supplied simple battery model. State that wind, acceleration, takeoff/landing and hardware limits are not modeled. No drone control or claim of a flight-ready plan. The route is open; no untested implicit return-to-home segment.
