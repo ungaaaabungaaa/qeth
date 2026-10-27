@@ -13,7 +13,7 @@ export async function readJsonInput(path: string): Promise<unknown> {
     let count = 0;
     for (;;) {
       const chunk = Buffer.allocUnsafe(Math.min(65536, limit + 1 - count));
-      const { bytesRead } = await handle.read(chunk);
+      const { bytesRead } = await handle.read(chunk, 0, chunk.length, null);
       if (!bytesRead) break;
       count += bytesRead;
       if (count > limit) throw new QethError('JSON input exceeds the 10 MiB limit.');

@@ -11,14 +11,24 @@ Local tools for document quality, agent traces, bounded web crawling, and offlin
 
 ## Install
 
-Requires Node.js **22.18 or newer**. The public npm release is being prepared. Until it is published, use the source instructions below.
+Requires Node.js **22.18 or newer**, including when you install with Bun. The public npm release is being prepared. Until it is published, use the source instructions below.
 
-After publication:
+After publication, choose one package manager. All use the same `qeth` package from the npm registry.
+
+| Package manager | Install for repeated use | Run once |
+| --- | --- | --- |
+| npm | `npm install -g qeth` | `npx qeth --help` |
+| pnpm | `pnpm add -g qeth` | `pnpm dlx qeth --help` |
+| Bun | `bun add -g qeth` | `bunx qeth --help` |
+| Yarn 2+ | Use `yarn dlx` | `yarn dlx qeth --help` |
+
+After a global install:
 
 ```sh
-npm install -g qeth
 qeth --help
 ```
+
+Bun uses Qeth's Node.js executable. A separate native Bun runtime build is not required. Yarn Classic users can use `yarn global add qeth`. See the [package manager guide](docs/package-managers.md) for local installs, version pinning, and verification scope.
 
 The four basic commands work without an account, a model download, or a paid API key. Documents and traces stay on your machine. The crawler contacts only the site you select.
 

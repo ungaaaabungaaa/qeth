@@ -61,7 +61,7 @@ async function readBounded(path: string): Promise<Buffer> {
     let count = 0;
     for (;;) {
       const buffer = Buffer.allocUnsafe(Math.min(65536, MAX_FILE + 1 - count));
-      const { bytesRead } = await handle.read(buffer);
+      const { bytesRead } = await handle.read(buffer, 0, buffer.length, null);
       if (!bytesRead) break;
       count += bytesRead;
       if (count > MAX_FILE) throw new QethError(`File exceeds 5 MiB: ${basename(path)}`);
