@@ -2,6 +2,9 @@
 
 ## 0.1.0
 
+- Document npm, pnpm, Bun, and Yarn install methods.
+- Read bounded JSON inputs correctly with Yarn Plug'n'Play file handles.
+
 - Add local document chunk and supplied-embedding checks.
 - Add agent trace timing, failure, token, and baseline reports.
 - Add bounded same-origin HTML crawling with robots and address checks.

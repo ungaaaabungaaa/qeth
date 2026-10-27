@@ -16,6 +16,7 @@
     "dist",
     "examples",
     "docs/cli-contract.md",
+    "docs/package-managers.md",
     "README.md",
     "CHANGELOG.md",
     "LICENSE"
