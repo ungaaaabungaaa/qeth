@@ -18,5 +18,5 @@ try {
     process.stdout.write(capture + '\n');
     text += '```text\n' + capture + '```\n\n';
   }
-  await writeFile('docs/example-session.md', text);
+  await writeFile('docs/example-session.md', text.trimEnd() + '\n');
 } finally { await site.close(); }
