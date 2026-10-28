@@ -65,3 +65,26 @@ test('CLI rejects unknown commands even with help and rejects misplaced options'
     await assert.rejects(run(...args), error => error.code === 2 && error.stdout === '' && !/^\s+at\s/m.test(error.stderr));
   }
 });
+
+
+test('CLI exports bounded trace timelines and rejects invalid or misplaced limits', async t => {
+  const dir = await mkdtemp(join(tmpdir(), 'qeth-timeline-'));
+  t.after(() => rm(dir, { recursive: true, force: true }));
+  const file = join(dir, 'trace.json'), output = join(dir, 'timeline.json');
+  await writeFile(file, JSON.stringify({ events: [
+    { name: 'late', startMs: 10, endMs: 20, status: 'ok' },
+    { name: 'early', startMs: 0, endMs: 15, status: 'error' }
+  ] }));
+  const { stdout, stderr } = await run('trace', file, '--timeline-limit', '1', '--json', '--out', output);
+  assert.equal(stderr, '');
+  const report = JSON.parse(stdout);
+  assert.equal(report.timeline.events[0].name, 'early');
+  assert.equal(report.timeline.omittedEvents, 1);
+  assert.equal(report.eventCount, 2);
+  assert.deepEqual(JSON.parse(await readFile(output, 'utf8')), report);
+  assert.match((await run('trace', file, '--timeline-limit', '1')).stdout, /Timeline: 1 included; 1 omitted/);
+  for (const value of ['0', '1.5', '1001', 'NaN']) {
+    await assert.rejects(run('trace', file, '--timeline-limit', value), error => error.code === 2 && error.stdout === '');
+  }
+  await assert.rejects(run('doctor', '--timeline-limit', '1'), error => error.code === 2);
+});

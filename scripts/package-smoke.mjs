@@ -29,13 +29,18 @@ try {
   site = await startFixture();
   const cases = [
     [['rag', 'scan', 'examples/chunks.json', '--json'], 'rag-scan'],
-    [['trace', 'examples/trace.json', '--json'], 'trace'],
+    [['trace', 'examples/trace.json', '--timeline-limit', '1', '--json'], 'trace'],
     [['crawl', site.url, '--allow-local', '--delay', '0', '--json'], 'crawl'],
     [['mission', 'plan', 'examples/survey-area.geojson', '--json'], 'mission-plan']
   ];
   for (const [args, kind] of cases) {
     const { stdout } = await run(args);
-    assert.equal(JSON.parse(stdout).kind, kind);
+    const report = JSON.parse(stdout);
+    assert.equal(report.kind, kind);
+    if (kind === 'trace') {
+      assert.equal(report.timeline.events.length, 1);
+      assert.equal(report.timeline.omittedEvents, report.eventCount - 1);
+    }
   }
   const library = await import(pathToFileURL(join(packageRoot, 'dist', 'index.js')).href);
   assert.equal(library.analyzeTrace({ events: [] }).eventCount, 0);

@@ -42,3 +42,39 @@ test('trace rejects invalid events before calculation', () => {
   assert.throws(() => analyzeTrace({ events: [valid, valid] }), /unique/);
   assert.throws(() => analyzeTrace({ events: Array(100001).fill(valid) }), /100000/);
 });
+
+
+test('bounded timeline sorts concurrent events without changing input or totals', () => {
+  const events = [
+    { id: 'late', name: 'late', startMs: 20, endMs: 50, status: 'error' },
+    { name: 'first', kind: 'tool', startMs: 0, endMs: 30, status: 'ok' },
+    { name: 'tie', startMs: 0, endMs: 10, status: 'ok' }
+  ];
+  const before = structuredClone(events);
+  const report = analyzeTrace({ events }, undefined, { timelineLimit: 2 });
+  assert.deepEqual(report.timeline, { events: [
+    { id: null, name: 'first', kind: 'tool', startMs: 0, endMs: 30, durationMs: 30, status: 'ok' },
+    { id: null, name: 'tie', kind: null, startMs: 0, endMs: 10, durationMs: 10, status: 'ok' }
+  ], omittedEvents: 1 });
+  assert.deepEqual(events, before);
+  assert.equal(report.eventCount, 3);
+  assert.equal(report.failedCount, 1);
+  assert.equal(report.totalEventTimeMs, 70);
+  assert.equal(report.wallTimeMs, 50);
+  assert.equal(report.tokens.missingEvents, 3);
+});
+
+test('timeline bounds, empty input, and absent option preserve the contract', () => {
+  assert.equal('timeline' in analyzeTrace({ events: [] }), false);
+  assert.deepEqual(analyzeTrace({ events: [] }, undefined, { timelineLimit: 1 }).timeline,
+    { events: [], omittedEvents: 0 });
+  for (const timelineLimit of [0, -1, 1001, 1.5, NaN, Infinity, '2', null]) {
+    assert.throws(() => analyzeTrace({ events: [] }, undefined, { timelineLimit }),
+      error => error.exitCode === 2 && /timelineLimit/.test(error.message));
+  }
+  const events = Array.from({ length: 1001 }, (_, i) =>
+    ({ name: String(i), startMs: i, endMs: i, status: 'ok' }));
+  const report = analyzeTrace({ events }, undefined, { timelineLimit: 1000 });
+  assert.equal(report.timeline.events.length, 1000);
+  assert.equal(report.timeline.omittedEvents, 1);
+});
