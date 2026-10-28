@@ -22,3 +22,19 @@ jobs:
       - run: npm ci --ignore-scripts
       - run: npm run check
       - run: npm run smoke:package
+
+  package-clients:
+    name: Package / ${{ matrix.client }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        client: [npm, pnpm, yarn-classic, yarn-pnp]
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci --ignore-scripts
+      - run: npm run smoke:clients -- ${{ matrix.client }}

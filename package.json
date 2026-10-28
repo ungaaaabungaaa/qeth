@@ -30,7 +30,8 @@
     "check": "npm run lint && npm test && npm run build",
     "prepack": "npm run build",
     "demo": "npm run build && node scripts/demo.mjs",
-    "smoke:package": "node scripts/package-smoke.mjs"
+    "smoke:package": "node scripts/package-smoke.mjs",
+    "smoke:clients": "node scripts/package-managers-smoke.mjs"
   },
   "engines": {
     "node": ">=22.18.0"
