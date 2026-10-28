@@ -12,7 +12,7 @@ const HELP = `Qeth ${VERSION} — local inspection and offline planning
 
 Usage:
   qeth rag scan PATH [--chunk-size 1000]
-  qeth trace FILE [--baseline FILE]
+  qeth trace FILE [--baseline FILE] [--timeline-limit 100]
   qeth crawl URL [--max-pages 10] [--max-depth 2] [--timeout 10000]
                   [--delay 250] [--allow-local]
   qeth mission plan FILE [--spacing 20] [--speed 5] [--altitude 30]
@@ -33,7 +33,7 @@ Reference: https://github.com/ungaaaabungaaa/qeth
 const optionDefinitions = {
   help: { type: 'boolean', short: 'h' }, version: { type: 'boolean', short: 'v' },
   json: { type: 'boolean' }, out: { type: 'string' },
-  'chunk-size': { type: 'string' }, baseline: { type: 'string' },
+  'chunk-size': { type: 'string' }, baseline: { type: 'string' }, 'timeline-limit': { type: 'string' },
   'max-pages': { type: 'string' }, 'max-depth': { type: 'string' }, timeout: { type: 'string' }, delay: { type: 'string' }, 'allow-local': { type: 'boolean' },
   spacing: { type: 'string' }, speed: { type: 'string' }, altitude: { type: 'string' }, 'battery-minutes': { type: 'string' }, reserve: { type: 'string' }, optimize: { type: 'string' }
 } as const;
@@ -57,14 +57,15 @@ function numeric(value: string | undefined, name: string): number | undefined {
 }
 
 function allowedOptions(kind: string, values: Values): void {
-  const specific: Record<string, string[]> = { rag: ['chunk-size'], trace: ['baseline'], crawl: ['max-pages', 'max-depth', 'timeout', 'delay', 'allow-local'], mission: ['spacing', 'speed', 'altitude', 'battery-minutes', 'reserve', 'optimize'], doctor: [] };
+  const specific: Record<string, string[]> = { rag: ['chunk-size'], trace: ['baseline', 'timeline-limit'], crawl: ['max-pages', 'max-depth', 'timeout', 'delay', 'allow-local'], mission: ['spacing', 'speed', 'altitude', 'battery-minutes', 'reserve', 'optimize'], doctor: [] };
   const allowed = new Set(['help', 'json', 'out', ...specific[kind]!]);
   for (const key of Object.keys(values)) if (!allowed.has(key)) throw new QethError(`--${key} is not an option for ${kind}.`);
 }
 
 async function reportFor(kind: string, input: string, values: Values): Promise<Report> {
   if (kind === 'rag') return scanDocuments(input, values['chunk-size'] === undefined ? {} : { chunkSize: numeric(values['chunk-size'], 'chunk-size')! });
-  if (kind === 'trace') return analyzeTrace(await readJsonInput(input), values.baseline === undefined ? undefined : await readJsonInput(values.baseline));
+  if (kind === 'trace') return analyzeTrace(await readJsonInput(input), values.baseline === undefined ? undefined : await readJsonInput(values.baseline),
+    values['timeline-limit'] === undefined ? {} : { timelineLimit: numeric(values['timeline-limit'], 'timeline-limit')! });
   if (kind === 'crawl') {
     const options = {
       ...(values['max-pages'] === undefined ? {} : { maxPages: numeric(values['max-pages'], 'max-pages')! }),
@@ -101,6 +102,7 @@ function human(report: Report): string {
       else result += `\nBaseline token change: ${delta >= 0 ? '+' : ''}${delta}` +
         (percent === null ? ' (percent unknown: zero-token baseline)' : ` (${percent >= 0 ? '+' : ''}${percent.toFixed(1)}%)`);
     }
+    if (report.timeline) result += `\nTimeline: ${report.timeline.events.length} included; ${report.timeline.omittedEvents} omitted (use --json or --out for events)`;
     return result;
   }
   if (report.kind === 'crawl') return `Site crawl\nPages: ${report.pages.length}\nLinks: ${report.links.length}\nSkipped requests: ${report.skipped.length}`;

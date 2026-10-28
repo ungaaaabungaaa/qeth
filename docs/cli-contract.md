@@ -6,7 +6,7 @@ Qeth 0.1.0 is a local-first inspection and offline mission planning CLI. Node.js
 
 - `qeth --help`, `qeth --version`, `qeth doctor`.
 - `qeth rag scan PATH [--chunk-size 1000] [--json] [--out FILE]`.
-- `qeth trace FILE [--baseline FILE] [--json] [--out FILE]`.
+- `qeth trace FILE [--baseline FILE] [--timeline-limit 100] [--json] [--out FILE]`.
 - `qeth crawl URL [--max-pages 10] [--max-depth 2] [--timeout 10000] [--delay 250] [--allow-local] [--json] [--out FILE]`.
 - `qeth mission plan FILE [--spacing 20] [--speed 5] [--altitude 30] [--battery-minutes 25] [--reserve 20] [--optimize battery|distance] [--json] [--out FILE]`.
 - Unknown commands/options, missing values, and invalid numeric values are errors. `--out` writes JSON only to a new file; never overwrite an existing file. Create no output files without an explicit option. JSON stdout is exactly one JSON object plus a newline. Human output is a concise measured summary.
@@ -23,9 +23,11 @@ Limits: 1000 files; 5 MiB per file; 25 MiB total bytes; 10000 records across the
 
 ## Trace
 
-`analyzeTrace(input, baseline?)` returns a `trace` report. Input schema: `{events: [{id?: string, name: string, kind?: string, startMs: number, endMs: number, status: "ok"|"error", tokens?: {input: nonnegative integer, output: nonnegative integer}}]}`. Names are nonempty; timestamps are finite and nonnegative; end must be >= start. Event IDs, when supplied, are unique. At most 100000 events and 10 MiB input.
+`analyzeTrace(input, baseline?, options?)` returns a `trace` report. Input schema: `{events: [{id?: string, name: string, kind?: string, startMs: number, endMs: number, status: "ok"|"error", tokens?: {input: nonnegative integer, output: nonnegative integer}}]}`. Names are nonempty; timestamps are finite and nonnegative; end must be >= start. Event IDs, when supplied, are unique. At most 100000 events and 10 MiB input.
 
 Report fields: eventCount, failedCount, wallTimeMs (max end minus min start; 0 for empty), totalEventTimeMs (sum, including concurrent spans), failures (name/id), tools (counts by name), tokens (input/output/total known sums, measuredEvents, missingEvents, complete), and comparison (null without baseline; otherwise actual total-token delta and percent only when both traces have complete token coverage; percent null for zero baseline). Never treat a missing token field as measured zero.
+
+Optional bounded timeline: pass `options.timelineLimit` or CLI `--timeline-limit` as an integer from 1 through 1000. Without the option the existing report shape is unchanged. With it, the report adds `timeline: {events, omittedEvents}`. Timeline events are ordered by start time, preserving input order for ties, and contain `id` (null when absent), `name`, `kind` (null when absent), `startMs`, `endMs`, `durationMs`, and `status`. Return at most the requested number of events; `omittedEvents` is the exact remaining count. Aggregate totals always cover the full trace. Empty input gives an empty timeline with zero omitted events. Invalid limits are input errors. Input arrays are never reordered. JSON stdout and `--out` include the timeline; human output gives the number included and omitted.
 
 ## Crawl
 

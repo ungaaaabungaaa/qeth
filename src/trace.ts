@@ -4,6 +4,7 @@ interface TraceEvent {
   id?: string; name: string; kind?: string; startMs: number; endMs: number;
   status: 'ok' | 'error'; tokens?: { input: number; output: number };
 }
+export interface TraceOptions { timelineLimit?: number }
 export interface TraceReport {
   schemaVersion: 1; kind: 'trace'; eventCount: number; failedCount: number;
   wallTimeMs: number; totalEventTimeMs: number;
@@ -11,6 +12,8 @@ export interface TraceReport {
   tools: { name: string; count: number }[];
   tokens: { input: number; output: number; total: number; measuredEvents: number; missingEvents: number; complete: boolean };
   comparison: { totalTokenDelta: number | null; percentChange: number | null } | null;
+  timeline?: { events: { id: string | null; name: string; kind: string | null;
+    startMs: number; endMs: number; durationMs: number; status: 'ok' | 'error' }[]; omittedEvents: number };
 }
 function parseTrace(input: unknown): TraceEvent[] {
   if (!input || typeof input !== 'object' || !('events' in input) || !Array.isArray(input.events)) throw new QethError('Trace must contain an events array.');
@@ -62,8 +65,17 @@ function summarize(events: TraceEvent[]): TraceReport {
     wallTimeMs: events.length ? last - first : 0, totalEventTimeMs, failures,
     tools: [...counts].sort(([a], [b]) => a.localeCompare(b)).map(([name, count]) => ({ name, count })), tokens, comparison: null };
 }
-export function analyzeTrace(input: unknown, baseline?: unknown): TraceReport {
-  const report = summarize(parseTrace(input));
+export function analyzeTrace(input: unknown, baseline?: unknown, options: TraceOptions = {}): TraceReport {
+  const limit = options.timelineLimit;
+  if (limit !== undefined && (!Number.isInteger(limit) || limit < 1 || limit > 1000)) throw new QethError('timelineLimit must be an integer from 1 through 1000.');
+  const events = parseTrace(input);
+  const report = summarize(events);
+  if (limit !== undefined) {
+    const timeline = [...events].sort((a, b) => a.startMs - b.startMs).slice(0, limit);
+    report.timeline = { events: timeline.map(event => ({ id: event.id ?? null, name: event.name,
+      kind: event.kind ?? null, startMs: event.startMs, endMs: event.endMs,
+      durationMs: event.endMs - event.startMs, status: event.status })), omittedEvents: events.length - timeline.length };
+  }
   if (baseline !== undefined) {
     const previous = summarize(parseTrace(baseline));
     const measured = report.tokens.complete && previous.tokens.complete;
