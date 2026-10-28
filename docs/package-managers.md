@@ -69,3 +69,11 @@ Qeth passes an explicit buffer offset, length, and file position to bounded file
 For a release check, build once and install the resulting `npm pack` tarball into disposable package-manager folders. Run `--help`, `--version`, `rag scan`, `trace`, `crawl`, and `mission plan` through each installed executable. Use the same example inputs and local crawl fixture as `npm run smoke:package`. Use fresh caches when checking a changed tarball. Remove those temporary installs and caches after the checks.
 
 Primary references: [Bun global installs](https://bun.sh/docs/pm/cli/add), [Bun executable behavior](https://bun.sh/docs/pm/bunx), [pnpm add](https://pnpm.io/cli/add), [pnpm dlx](https://pnpm.io/cli/dlx), and [Yarn dlx](https://yarnpkg.com/cli/dlx).
+
+## Automated checks
+
+Run `npm run smoke:clients` for npm, pinned pnpm 12.15.0, Yarn Classic 1.22.22, and Yarn 4.18.1 with Plug'n'Play. To check one client, append `-- pnpm` (or `npm`, `yarn-classic`, `yarn-pnp`). Help is available with `-- --help` and does not install anything.
+
+The explicit check needs registry access. It builds and packs once, installs that exact tarball in separate temporary projects, then checks help, version, all four commands and library import through each client. Crawling uses a loopback fixture. Tool packages, client installs and caches are local temporary files and are removed on success or failure; no global tool or user configuration is changed. Regular unit tests do not run network installs.
+
+CI runs the four client checks on Linux with Node 22, separately from the existing Node/OS core matrix. This does not establish package-manager compatibility on other operating systems. Bun remains the documented manual check; this script does not install or test Bun.

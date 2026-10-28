@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Automate isolated tarball installation checks for npm, pnpm, Yarn Classic and Yarn Plug'n'Play, with a Linux CI matrix.
+
 - Add opt-in bounded trace timelines with chronological events and exact omitted counts (`--timeline-limit 1..1000`).
 
 - Use the public npm name `@ungaaaabungaaa/qeth` because the registry rejects the unscoped name. The `qeth` command is unchanged.
